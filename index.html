@@ -64,6 +64,7 @@
 <div class="wrap" id="app"></div>
 
 <script>
+const SCRIPT_URL = "https://default8a5817e61706474b9e8a078264754c.40.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b86cf425806c4bf093c8e08ca50af3cc/triggers/manual/paths/invoke?api-version=1";
 const categories = [
   { id:"motivation", label:"Motivation & Stimmung", icon:"🙂", questions:[
     { id:"q1", text:"Wie motiviert gehst du aktuell zur Arbeit?", low:"Sehr unmotiviert", high:"Sehr motiviert" },
@@ -298,8 +299,8 @@ function bindEvents() {
     btn.textContent = "Wird gesendet …";
     fetch(SCRIPT_URL, {
       method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(payload)
     }).catch(()=>{}).finally(()=>{
       history.push({ answers:{...answers}, freetext, date });
