@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Team-Stimmungsumfrage</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; padding: 2rem 1rem; }
+  .wrap { max-width: 620px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 1.5rem; }
+  h2 { font-size: 18px; font-weight: 500; margin-bottom: 1.25rem; }
+  h3 { font-size: 16px; font-weight: 500; margin-bottom: 1rem; }
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; }
+  .progress-bar-bg { height: 6px; background: #e8e6df; border-radius: 99px; margin-bottom: 1.5rem; }
+  .progress-bar-fill { height: 100%; background: #1D9E75; border-radius: 99px; transition: width 0.3s; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #888; margin-bottom: 6px; }
+  .cat-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; }
+  .cat-tab { font-size: 12px; padding: 4px 10px; border-radius: 99px; border: 0.5px solid rgba(0,0,0,0.12); background: #fff; cursor: pointer; }
+  .cat-tab.active { border: 1.5px solid #1D9E75; background: #f0faf6; color: #1D9E75; font-weight: 500; }
+  .cat-tab.done { background: #EAF3DE; color: #3B6D11; border-color: #c0dd97; }
+  .question { margin-bottom: 1.75rem; }
+  .question:last-child { margin-bottom: 0; }
+  .question p { font-size: 15px; line-height: 1.5; margin-bottom: 12px; }
+  .scale { display: flex; gap: 8px; }
+  .scale-btn { flex: 1; padding: 10px 4px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.12); background: #f5f5f3; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 20px; transition: all 0.15s; }
+  .scale-btn:hover { background: #ebebea; }
+  .scale-btn.sel { border-width: 2px; }
+  .scale-num { font-size: 10px; color: #888; }
+  .scale-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+  .scale-labels span { font-size: 11px; color: #888; }
+  .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 0.5rem; }
+  .btn { padding: 10px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; border: 0.5px solid rgba(0,0,0,0.15); background: #ebebea; }
+  .btn.primary { background: #1D9E75; color: #fff; border: none; font-weight: 500; }
+  .btn.primary:disabled { background: #ebebea; color: #aaa; cursor: not-allowed; }
+  .btn.secondary { background: #f5f5f3; }
+  textarea { width: 100%; min-height: 90px; resize: vertical; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.2); background: #f5f5f3; font-family: inherit; }
+  /* Dashboard */
+  .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+  .metric { background: #f5f5f3; border-radius: 10px; padding: 1rem; }
+  .metric .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .metric .value { font-size: 24px; font-weight: 500; }
+  .metric .sub { font-size: 11px; color: #888; margin-top: 2px; }
+  .bar-row { margin-bottom: 1rem; }
+  .bar-row:last-child { margin-bottom: 0; }
+  .bar-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 14px; }
+  .bar-bg { height: 8px; background: #e8e6df; border-radius: 99px; }
+  .bar-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+  .tab-row { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .tab-btn { font-size: 12px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid rgba(0,0,0,0.12); background: #fff; cursor: pointer; }
+  .tab-btn.active { border: 1.5px solid #1D9E75; background: #EAF3DE; color: #3B6D11; font-weight: 500; }
+  .delta-box { background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #555; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-weight: 500; padding: 0 8px 12px 0; color: #888; border-bottom: 0.5px solid rgba(0,0,0,0.1); }
+  th.center { text-align: center; padding: 0 6px 12px; }
+  td { padding: 10px 8px 10px 0; border-bottom: 0.5px solid rgba(0,0,0,0.07); }
+  td.center { text-align: center; padding: 10px 6px; font-weight: 500; }
+  .freetext-box { font-style: italic; font-size: 14px; line-height: 1.6; }
+  .hint { font-size: 12px; color: #888; text-align: center; margin-top: 8px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+const SCRIPT_URL = "https://default8a5817e61706474b9e8a078264754c.40.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b86cf425806c4bf093c8e08ca50af3cc/triggers/manual/paths/invoke?api-version=1";
+const categories = [
+  { id:"motivation", label:"Motivation & Stimmung", icon:"🙂", questions:[
+    { id:"q1", text:"Wie motiviert gehst du aktuell zur Arbeit?", low:"Sehr unmotiviert", high:"Sehr motiviert" },
+    { id:"q2", text:"Wie würdest du die allgemeine Stimmung im Team gerade beschreiben?", low:"Sehr gedrückt", high:"Sehr positiv" },
+  ]},
+  { id:"wellbeing", label:"Wohlbefinden", icon:"🌿", questions:[
+    { id:"q3", text:"Wie hoch ist dein aktuelles Stresslevel bei der Arbeit?", low:"Sehr hoch", high:"Sehr niedrig" },
+    { id:"q4", text:"Wie gut gelingt dir die Balance zwischen Arbeit und Privatleben?", low:"Gar nicht gut", high:"Sehr gut" },
+  ]},
+  { id:"team", label:"Zusammenarbeit im Team", icon:"🤝", questions:[
+    { id:"q5", text:"Wie gut arbeitet ihr als Team zusammen?", low:"Sehr schlecht", high:"Sehr gut" },
+    { id:"q6", text:"Fühlst du dich von deinen Kolleg:innen in deiner Rolle unterstützt und wertgeschätzt?", low:"Gar nicht", high:"Sehr stark" },
+  ]},
+  { id:"leadership", label:"Führung & Vorgesetzte:r", icon:"👔", questions:[
+    { id:"q7", text:"Wie gut ist die Zusammenarbeit mit deiner Führungskraft?", low:"Sehr schlecht", high:"Sehr gut" },
+    { id:"q8", text:"Wie klar und offen kommuniziert deine Führungskraft mit dir?", low:"Sehr unklar", high:"Sehr klar" },
+    { id:"q9", text:"Wie fair fühlst du dich im Unternehmen behandelt?", low:"Sehr unfair", high:"Sehr fair" },
+  ]},
+  { id:"feedback", label:"Feedback & Wachstum", icon:"💬", questions:[
+    { id:"q10", text:"Wie zufrieden bist du mit der Qualität und Häufigkeit des Feedbacks deiner Führungskraft oder Kolleg:innen?", low:"Sehr unzufrieden", high:"Sehr zufrieden" },
+    { id:"q11", text:"Wie gut kannst du deine Fähigkeiten in deiner Rolle weiterentwickeln – und fühlst du dich dabei ausreichend gefördert und gefordert?", low:"Gar nicht gut", high:"Sehr gut" },
+    { id:"q12", text:"Wie viel Freiraum hast du, um selbstständig Entscheidungen zu treffen?", low:"Sehr wenig", high:"Sehr viel" },
+  ]},
+];
+
+const emojis = ["😞","😟","😐","😊","😄"];
+const scaleColors = ["#E24B4A","#F0957B","#EF9F27","#97C459","#1D9E75"];
+
+let answers = {}, freetext = "", currentCat = 0, history = [], phase = "survey", dashTab = "overview";
+
+function getColor(v) {
+  if(v>=4.5) return "#1D9E75"; if(v>=3.5) return "#97C459";
+  if(v>=2.5) return "#EF9F27"; if(v>=1.5) return "#F0957B"; return "#E24B4A";
+}
+function getLabel(v) {
+  if(v>=4.5) return "Sehr gut"; if(v>=3.5) return "Gut";
+  if(v>=2.5) return "Mittel"; if(v>=1.5) return "Ausbaufähig"; return "Kritisch";
+}
+function catAvg(cat, h) {
+  const vals = cat.questions.map(q=>(h||answers)[q.id]).filter(v=>v!==undefined);
+  return vals.length ? +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
+}
+function overallAvg(h) {
+  const vals = categories.flatMap(c=>c.questions).map(q=>(h||answers)[q.id]).filter(v=>v!==undefined);
+  return vals.length ? +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
+}
+function allQuestions() { return categories.flatMap(c=>c.questions); }
+function answeredCount() { return Object.keys(answers).length; }
+
+function render() {
+  document.getElementById("app").innerHTML = phase === "survey" ? renderSurvey() : renderDashboard();
+  bindEvents();
+}
+
+function renderSurvey() {
+  const total = allQuestions().length;
+  const done = answeredCount();
+  const pct = Math.round((done/total)*100);
+  const cat = categories[currentCat];
+  const isLast = currentCat === categories.length - 1;
+  const canAdvance = cat.questions.every(q=>answers[q.id]!==undefined);
+
+  const tabs = categories.map((c,i)=>{
+    const ans = c.questions.filter(q=>answers[q.id]!==undefined).length;
+    const isDone = ans===c.questions.length;
+    const isActive = i===currentCat;
+    return `<button class="cat-tab${isActive?" active":""}${isDone?" done":""}" data-cat="${i}">
+      ${c.icon} ${c.label} ${isDone?"✓":`${ans}/${c.questions.length}`}
+    </button>`;
+  }).join("");
+
+  const questions = cat.questions.map((q,qi)=>{
+    const btns = [1,2,3,4,5].map(v=>{
+      const sel = answers[q.id]===v;
+      const style = sel ? `border:2px solid ${scaleColors[v-1]};background:${scaleColors[v-1]}22;` : "";
+      return `<button class="scale-btn${sel?" sel":""}" data-qid="${q.id}" data-val="${v}" style="${style}">
+        <span>${emojis[v-1]}</span>
+        <span class="scale-num" style="${sel?`color:${scaleColors[v-1]}`:""}">${v}</span>
+      </button>`;
+    }).join("");
+    return `<div class="question">
+      <p>${q.text}</p>
+      <div class="scale">${btns}</div>
+      <div class="scale-labels"><span>${q.low}</span><span>${q.high}</span></div>
+    </div>`;
+  }).join("");
+
+  const freetextBlock = isLast ? `<div class="card">
+    <h3>💡 Verbesserungsvorschläge</h3>
+    <p style="font-size:14px;color:#888;margin-bottom:12px">Optional: Was würde deine Zufriedenheit im Team verbessern?</p>
+    <textarea id="freetext" placeholder="Deine Gedanken hier …">${freetext}</textarea>
+  </div>` : "";
+
+  const backBtn = currentCat>0 ? `<button class="btn secondary" id="btn-back">← Zurück</button>` : "";
+  const nextBtn = !isLast
+    ? `<button class="btn primary" id="btn-next" ${canAdvance?"":"disabled"}>Weiter →</button>`
+    : `<button class="btn primary" id="btn-submit" ${done===total?"":"disabled"}>Umfrage abschicken ✓</button>`;
+
+  const hint = done<total&&isLast ? `<p class="hint">Noch ${total-done} Frage(n) offen – bitte alle Kategorien ausfüllen.</p>` : "";
+
+  return `
+    <h1>Team-Stimmungsumfrage</h1>
+    <div class="progress-label"><span>Fortschritt</span><span>${done} / ${total} Fragen</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    <div class="cat-tabs">${tabs}</div>
+    <div class="card"><h3>${cat.icon} ${cat.label}</h3>${questions}</div>
+    ${freetextBlock}
+    <div class="btn-row">${backBtn}${nextBtn}</div>
+    ${hint}
+  `;
+}
+
+function renderDashboard() {
+  const latest = history[history.length-1];
+  const ov = overallAvg(latest.answers);
+  const catStats = categories.map(c=>({ ...c, avg: catAvg(c, latest.answers) }));
+  const sorted = [...catStats].sort((a,b)=>a.avg-b.avg);
+  const weakest = sorted[0], strongest = sorted[sorted.length-1];
+  const prevOv = history.length>1 ? overallAvg(history[history.length-2].answers) : null;
+  const delta = prevOv!==null ? (ov-prevOv).toFixed(1) : null;
+
+  const tabs = ["overview","detail","history"].map(t=>`
+    <button class="tab-btn${dashTab===t?" active":""}" data-tab="${t}">
+      ${t==="overview"?"Übersicht":t==="detail"?"Details":"Verlauf"}
+    </button>`).join("");
+
+  let content = "";
+
+  if(dashTab==="overview") {
+    const deltaBox = delta!==null ? `<div class="delta-box">
+      <span style="font-size:20px">${+delta>0?"📈":+delta<0?"📉":"➡️"}</span>
+      Im Vergleich zur letzten Befragung:
+      <strong style="color:${+delta>0?"#1D9E75":+delta<0?"#E24B4A":"#555"}">${+delta>0?"+":""}${delta} Punkte</strong>
+    </div>` : "";
+
+    const bars = catStats.map(c=>`<div class="bar-row">
+      <div class="bar-label"><span>${c.icon} ${c.label}</span><span style="font-size:13px;font-weight:500;color:${getColor(c.avg)}">${c.avg}</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${(c.avg/5)*100}%;background:${getColor(c.avg)}"></div></div>
+    </div>`).join("");
+
+    const freetextBlock = latest.freetext ? `<div class="card">
+      <p style="font-size:13px;color:#888;margin-bottom:8px">💡 Verbesserungsvorschläge</p>
+      <p class="freetext-box">„${latest.freetext}"</p>
+    </div>` : "";
+
+    content = `
+      <div class="metric-grid">
+        <div class="metric"><div class="label">Gesamtscore</div><div class="value" style="color:${getColor(ov)}">${ov}</div><div class="sub">${getLabel(ov)}</div></div>
+        <div class="metric"><div class="label">Stärke</div><div class="value" style="font-size:16px">${strongest.icon} ${strongest.label}</div><div class="sub" style="color:#1D9E75">${strongest.avg} / 5</div></div>
+        <div class="metric"><div class="label">Handlungsbedarf</div><div class="value" style="font-size:16px">${weakest.icon} ${weakest.label}</div><div class="sub" style="color:${getColor(weakest.avg)}">${weakest.avg} / 5</div></div>
+      </div>
+      ${deltaBox}
+      <div class="card">${bars}</div>
+      ${freetextBlock}`;
+  }
+
+  if(dashTab==="detail") {
+    const rows = categories.map(cat=>{
+      const qs = cat.questions.map((q,qi)=>{
+        const v = latest.answers[q.id];
+        return `<div style="margin-bottom:${qi<cat.questions.length-1?"1rem":"0"}">
+          <p style="font-size:13px;color:#888;margin-bottom:6px;line-height:1.4">${q.text}</p>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:18px">${emojis[v-1]}</span>
+            <div style="flex:1;height:6px;background:#e8e6df;border-radius:99px">
+              <div style="width:${(v/5)*100}%;height:100%;background:${scaleColors[v-1]};border-radius:99px"></div>
+            </div>
+            <span style="font-size:13px;font-weight:500;color:${scaleColors[v-1]};min-width:32px">${v} / 5</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:3px">
+            <span style="font-size:10px;color:#888">${q.low}</span>
+            <span style="font-size:10px;color:#888">${q.high}</span>
+          </div>
+        </div>`;
+      }).join("");
+      return `<div style="margin-bottom:1.5rem"><p style="font-size:14px;font-weight:500;margin-bottom:12px">${cat.icon} ${cat.label}</p>${qs}</div>`;
+    }).join("");
+    content = `<div class="card">${rows}</div>`;
+  }
+
+  if(dashTab==="history") {
+    if(history.length<2) {
+      content = `<div style="background:#f5f5f3;border-radius:12px;padding:2rem;text-align:center;color:#888;font-size:14px">
+        Der Verlauf wird sichtbar, sobald mindestens zwei Befragungen abgeschlossen wurden.
+      </div>`;
+    } else {
+      const headers = history.map(h=>`<th class="center">${h.date}</th>`).join("");
+      const catRows = categories.map(cat=>{
+        const cells = history.map(h=>{
+          const avg = catAvg(cat, h.answers);
+          return `<td class="center" style="color:${getColor(avg)}">${avg??'–'}</td>`;
+        }).join("");
+        return `<tr><td>${cat.icon} ${cat.label}</td>${cells}</tr>`;
+      }).join("");
+      const totalCells = history.map(h=>{
+        const avg = overallAvg(h.answers);
+        return `<td class="center" style="color:${getColor(avg)}">${avg??'–'}</td>`;
+      }).join("");
+      content = `<div class="card"><table>
+        <thead><tr><th>Kategorie</th>${headers}</tr></thead>
+        <tbody>${catRows}<tr style="border-top:0.5px solid rgba(0,0,0,0.1)"><td style="font-weight:500;padding-top:10px">Gesamt</td>${totalCells}</tr></tbody>
+      </table></div>`;
+    }
+  }
+
+  return `
+    <h1>Auswertung</h1>
+    <div class="tab-row">${tabs}</div>
+    ${content}
+    <div style="text-align:center;margin-top:1.5rem">
+      <button class="btn secondary" id="btn-new">Neue Befragungsrunde starten</button>
+      <p class="hint">Nächste Befragung in ca. 4 Wochen</p>
+    </div>`;
+}
+
+function bindEvents() {
+  document.querySelectorAll(".cat-tab").forEach(btn=>btn.addEventListener("click",()=>{
+    currentCat=+btn.dataset.cat; render();
+  }));
+  document.querySelectorAll(".scale-btn").forEach(btn=>btn.addEventListener("click",()=>{
+    answers[btn.dataset.qid]=+btn.dataset.val; render();
+  }));
+  document.getElementById("btn-back")?.addEventListener("click",()=>{ currentCat--; render(); });
+  document.getElementById("btn-next")?.addEventListener("click",()=>{ currentCat++; render(); });
+  document.getElementById("freetext")?.addEventListener("input",e=>{ freetext=e.target.value; });
+  document.getElementById("btn-submit")?.addEventListener("click",()=>{
+    const now=new Date();
+    const date=`${String(now.getDate()).padStart(2,"0")}.${String(now.getMonth()+1).padStart(2,"0")}.${now.getFullYear()}`;
+    const payload = { date, freetext, ...answers };
+    const btn = document.getElementById("btn-submit");
+    btn.disabled = true;
+    btn.textContent = "Wird gesendet …";
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    }).catch(()=>{}).finally(()=>{
+      history.push({ answers:{...answers}, freetext, date });
+      phase="dashboard"; dashTab="overview"; render();
+    });
+  });
+  document.querySelectorAll(".tab-btn").forEach(btn=>btn.addEventListener("click",()=>{
+    dashTab=btn.dataset.tab; render();
+  }));
+  document.getElementById("btn-new")?.addEventListener("click",()=>{
+    answers={}; freetext=""; currentCat=0; phase="survey"; render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
